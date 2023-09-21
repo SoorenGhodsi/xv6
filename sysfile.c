@@ -453,3 +453,15 @@ sys_writecount(void)
 {
   return write_counter;
 }
+
+int
+sys_setwritecount(void)
+{
+    int new_count;
+    
+    if (argint(0, &new_count) < 0) 
+        return -1;
+    
+    write_counter = new_count;
+    return 0;
+}
