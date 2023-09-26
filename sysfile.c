@@ -465,3 +465,17 @@ sys_setwritecount(void)
     write_counter = new_count;
     return 0;
 }
+
+
+/*
+
+*** LIST OF COMMANDS IN ORDER ***
+
+cd xv6
+ssh qemu01.cs.virginia.edu
+...enter password...
+cd Documents/os/xv6
+source /opt/rh/devtoolset-11/enable
+
+
+*/

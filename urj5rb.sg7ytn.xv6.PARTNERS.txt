@@ -1,0 +1,9 @@
+Partner File 
+
+Mehmet Faruk Yaylagul (urj5rb)
+Sooren Ghodsi (sg7ytn)
+
+
+xv6 Assignment 
+
+We (Faruk and Sooren) worked on the assignment equally to implement the system call "int writecount()". We made sure that calls to write() and/or writecount() work correctly. When we tested the program we ensured that the count incremented from any calls to write(). We both shared the work to write a program that uses and tests the new system calls.
