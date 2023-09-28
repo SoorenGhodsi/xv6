@@ -477,5 +477,4 @@ ssh qemu01.cs.virginia.edu
 cd Documents/os/xv6
 source /opt/rh/devtoolset-11/enable
 
-
 */

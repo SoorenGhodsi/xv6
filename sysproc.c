@@ -6,6 +6,13 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "processesinfo.h"
+#include "spinlock.h"
+
+extern struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
 
 int
 sys_fork(void)
@@ -97,8 +104,50 @@ sys_yield(void)
   return 0;
 }
 
-int sys_shutdown(void)
+int 
+sys_shutdown(void)
 {
   shutdown();
+  return 0;
+}
+
+int
+sys_settickets(void)
+{
+  int n;
+  if(argint(0, &n) < 0)
+    return -1;
+  if(n <= 0 || n > 100000)
+    return -1;
+
+  // Set the tickets for the current process
+  myproc()->tickets = n;
+  return 0;
+}
+
+int
+sys_getprocessesinfo(void)
+{
+  struct processes_info *proc_info;
+
+  if (argptr(0, (void*) &proc_info, sizeof(*proc_info)) < 0)
+    return -1;
+  
+  acquire(&ptable.lock);
+
+  int count = 0;
+  for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state == UNUSED)
+      continue;
+    
+    proc_info->pids[count] = p->pid;
+    proc_info->times_scheduled[count] = p->times_scheduled;
+    proc_info->tickets[count] = p->tickets;
+    count++;
+  }
+  proc_info -> num_processes = count;
+
+  release(&ptable.lock);
+
   return 0;
 }
