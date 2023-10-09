@@ -1,0 +1,10 @@
+Partner File 
+
+Mehmet Faruk Yaylagul (urj5rb)
+Sooren Ghodsi (sg7ytn)
+
+
+Lottery Scheduling Assignment 
+
+
+We (Faruk and Sooren) worked on the assignment equally to implement the sys_setticket, getprocessinfo and we edited the schedular. We made the processesinfo header file and implemented the LCG park miller random number generator into the scheduler. I set the testing environment on makefile and we worked together to come up with the last version of the lottery scheduling
