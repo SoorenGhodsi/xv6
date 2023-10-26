@@ -638,7 +638,7 @@ namex(char *path, int nameiparent, char *name)
       return 0;
     }
     if(nameiparent && *path == '\0'){
-      // Stop one level early.
+      // stop_flag one level early.
       iunlock(ip);
       return ip;
     }

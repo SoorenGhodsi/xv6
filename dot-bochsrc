@@ -518,7 +518,7 @@ keyboard_serial_delay: 250
 # consistently in Windows.
 #
 # If your OS is losing characters during a paste, increase the paste
-# delay until it stops losing characters.
+# delay until it stop_flags losing characters.
 #
 # Examples:
 #   keyboard_paste_delay: 100000

@@ -1398,7 +1398,7 @@ forktest(void)
 
   for(; n > 0; n--){
     if(wait() < 0){
-      printf(1, "wait stopped early\n");
+      printf(1, "wait stop_flagped early\n");
       exit();
     }
   }

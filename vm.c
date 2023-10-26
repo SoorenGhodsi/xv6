@@ -92,13 +92,13 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 //   KERNBASE..KERNBASE+EXTMEM: mapped to 0..EXTMEM (for I/O space)
 //   KERNBASE+EXTMEM..data: mapped to EXTMEM..V2P(data)
 //                for the kernel's instructions and r/o data
-//   data..KERNBASE+PHYSTOP: mapped to V2P(data)..PHYSTOP,
+//   data..KERNBASE+PHYstop_flag: mapped to V2P(data)..PHYstop_flag,
 //                                  rw data + free physical memory
 //   0xfe000000..0: mapped direct (devices such as ioapic)
 //
 // The kernel allocates physical memory for its heap and for user memory
-// between V2P(end) and the end of physical memory (PHYSTOP)
-// (directly addressable from end..P2V(PHYSTOP)).
+// between V2P(end) and the end of physical memory (PHYstop_flag)
+// (directly addressable from end..P2V(PHYstop_flag)).
 
 // This table defines the kernel's mappings, which are present in
 // every process's page table.
@@ -110,7 +110,7 @@ static struct kmap {
 } kmap[] = {
  { (void*)KERNBASE, 0,               EXTMEM,      PTE_W}, // I/O space
  { (void*)KERNLINK, V2P_C(KERNLINK), V2P_C(data), 0},     // kern text+rodata
- { (void*)data,     V2P_C(data),     PHYSTOP,     PTE_W}, // kern data+memory
+ { (void*)data,     V2P_C(data),     PHYstop_flag,     PTE_W}, // kern data+memory
  { (void*)DEVSPACE, DEVSPACE,        0,           PTE_W}, // more devices
 };
 
@@ -124,8 +124,8 @@ setupkvm(void)
   if((pgdir = (pde_t*)kalloc()) == 0)
     return 0;
   memset(pgdir, 0, PGSIZE);
-  if (P2V(PHYSTOP) > (void*)DEVSPACE)
-    panic("PHYSTOP too high");
+  if (P2V(PHYstop_flag) > (void*)DEVSPACE)
+    panic("PHYstop_flag too high");
   for(k = kmap; k < &kmap[NELEM(kmap)]; k++)
     if(mappages(pgdir, k->virt, k->phys_end - k->phys_start,
                 (uint)k->phys_start, k->perm) < 0) {
