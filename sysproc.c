@@ -151,3 +151,30 @@ sys_getprocessesinfo(void)
 
   return 0;
 }
+
+int
+sys_getpagetableentry(void)
+{
+  int pid, address;
+  if(argint(0, &pid) < 0 || argint(1, &address) < 0)
+    return -1;
+  return getpagetableentry(pid, address);
+}
+
+int
+sys_isphysicalpagefree(void)
+{
+  int ppn;
+  if(argint(0, &ppn) < 0)
+    return -1;
+  return isphysicalpagefree(ppn);
+}
+
+int
+sys_dumppagetable(void)
+{
+  int pid;
+  if(argint(0, &pid) < 0)
+    return -1;
+  return dumppagetable(pid);
+}

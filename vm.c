@@ -6,6 +6,12 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "spinlock.h"
+
+extern struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
@@ -392,3 +398,78 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //PAGEBREAK!
 // Blank page.
 
+int getpagetableentry(int pid, int address) {
+  struct proc *p;
+  pte_t *pte;
+
+  // Iterate through the process table to find the process with the given PID.
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->pid == pid) {
+      // Use walkpgdir to get the last-level page table entry.
+      if((pte = walkpgdir(p->pgdir, (void *) address, 0)) != 0) 
+        return *pte;  // Return the entry.
+      else 
+        return 0;  // No entry found for the given virtual address.
+    }
+  }
+  return 0;  // No such process with the given PID.
+}
+
+
+int
+dumppagetable(int pid)
+{
+  struct proc *p;
+  pde_t *pgdir;
+  pte_t *pte;
+  uint va;
+
+  // Find the process with the given pid
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if(p->pid == pid)
+      break;
+
+  // Check if process was found
+  if(p == &ptable.proc[NPROC])
+    return -1;  // Process not found
+
+  pgdir = p->pgdir;
+  cprintf("START PAGE TABLE pid=%d\n", pid);
+
+  // Loop through the virtual addresses
+  for(va = 0; va < p->sz; va += PGSIZE) {
+    pte = walkpgdir(pgdir, (char*)va, 0);
+    if(!pte)
+      continue;  // Page table entry doesn't exist
+
+    if(*pte & PTE_P) {
+      cprintf("%x P ", va);   // Virtual Address
+      cprintf("%c ", (*pte & PTE_U) ? 'U' : '-');  // User-accessible
+      cprintf("%c ", (*pte & PTE_W) ? 'W' : '-');  // Writable
+      cprintf("%x\n", PTE_ADDR(*pte));   // Physical Address
+    } else
+      cprintf("%x - - -\n", va);  // Non-present page
+  }
+  return 0;
+}
+
+
+// void dumppagetable(int pid) {
+//   struct proc *p;
+//   pde_t *pgdir;
+//   pte_t *pte;
+//   uint va;
+
+//   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+//     if (p->pid == pid) {
+//       pgdir = p->pgdir;
+//       for(va = 0; va < p->sz; va += PGSIZE) 
+//         if((pte = walkpgdir(pgdir, (void *) va, 0)) != 0) 
+//           if(*pte & PTE_P) // check if the page is present
+//             cprintf("virtual address: %x, physical address: %x, permissions: %x\n", 
+//                 va, PTE_ADDR(*pte), PTE_FLAGS(*pte));
+//       return;
+//     }
+//   }
+//   cprintf("No such process with PID: %d\n", pid);
+// }

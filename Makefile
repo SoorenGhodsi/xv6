@@ -194,6 +194,9 @@ UPROGS=\
 	_processlist\
 	_lotterytest\
 	_timewithtickets\
+	_pp_suite\
+    _pp_test\
+    _ptetool\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

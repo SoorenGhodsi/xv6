@@ -8,6 +8,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "spinlock.h"
+#define PPN(x) ((x) >> 12) 
 
 void freerange(void *vstart, void *vend);
 extern char end[]; // first address after kernel loaded from ELF file
@@ -95,3 +96,10 @@ kalloc(void)
   return (char*)r;
 }
 
+int isphysicalpagefree(int ppn) {
+  struct run *r;
+  for(r = kmem.freelist; r; r = r->next)
+    if (PPN(V2P((char *)r)) == ppn)
+      return 1;  // page is free
+  return 0;  // page is not free
+}
