@@ -223,7 +223,7 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz)
 }
 
 // Allocate page tables and physical memory to grow process from oldsz to
-// newsz, which need not be page aligned.  Returns new size or 0 on error.
+// newsz, which need not be page aligned. Returns new size or 0 on error.
 int
 allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 {
@@ -232,19 +232,21 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 
   if(newsz >= KERNBASE)
     return 0;
+
   if(newsz < oldsz)
     return oldsz;
 
   a = PGROUNDUP(oldsz);
   for(; a < newsz; a += PGSIZE){
     mem = kalloc();
-    if(mem == 0){
+    if(mem == 0) {
       cprintf("allocuvm out of memory\n");
       deallocuvm(pgdir, newsz, oldsz);
       return 0;
     }
+
     memset(mem, 0, PGSIZE);
-    if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+    if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
       cprintf("allocuvm out of memory (2)\n");
       deallocuvm(pgdir, newsz, oldsz);
       kfree(mem);
@@ -332,7 +334,8 @@ copyuvm(pde_t *pgdir, uint sz)
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
-      panic("copyuvm: page not present");
+      break;
+      //panic("copyuvm: page not present");
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
@@ -398,23 +401,23 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //PAGEBREAK!
 // Blank page.
 
+
 int getpagetableentry(int pid, int address) {
   struct proc *p;
   pte_t *pte;
 
-  // Iterate through the process table to find the process with the given PID.
+  // Go through the process table to find the process with the given pid
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (p->pid == pid) {
-      // Use walkpgdir to get the last-level page table entry.
+      // Use walkpgdir to get the last page table entry
       if((pte = walkpgdir(p->pgdir, (void *) address, 0)) != 0) 
-        return *pte;  // Return the entry.
+        return *pte;
       else 
-        return 0;  // No entry found for the given virtual address.
+        return 0;
     }
   }
-  return 0;  // No such process with the given PID.
+  return 0;
 }
-
 
 int
 dumppagetable(int pid)
@@ -422,7 +425,6 @@ dumppagetable(int pid)
   struct proc *p;
   pde_t *pgdir;
   pte_t *pte;
-  uint va;
 
   // Find the process with the given pid
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
@@ -431,45 +433,31 @@ dumppagetable(int pid)
 
   // Check if process was found
   if(p == &ptable.proc[NPROC])
-    return -1;  // Process not found
+    return -1;
 
   pgdir = p->pgdir;
   cprintf("START PAGE TABLE pid=%d\n", pid);
 
   // Loop through the virtual addresses
-  for(va = 0; va < p->sz; va += PGSIZE) {
-    pte = walkpgdir(pgdir, (char*)va, 0);
+  for(int i = 0; i < p->sz; i += PGSIZE) {
+    pte = walkpgdir(pgdir, (char*)i, 0);
+    
     if(!pte)
-      continue;  // Page table entry doesn't exist
+      continue;
 
     if(*pte & PTE_P) {
-      cprintf("%x P ", va);   // Virtual Address
-      cprintf("%c ", (*pte & PTE_U) ? 'U' : '-');  // User-accessible
-      cprintf("%c ", (*pte & PTE_W) ? 'W' : '-');  // Writable
+      cprintf("%x P ", i);   // Virtual Address
+
+      if (*pte & PTE_U) cprintf("U ");   // User-mode
+      else cprintf("- ");
+
+      if (*pte & PTE_W) cprintf("W ");   // Writable
+      else cprintf("- ");
+
       cprintf("%x\n", PTE_ADDR(*pte));   // Physical Address
+
     } else
-      cprintf("%x - - -\n", va);  // Non-present page
+      cprintf("%x - - -\n", i);  // No page
   }
   return 0;
 }
-
-
-// void dumppagetable(int pid) {
-//   struct proc *p;
-//   pde_t *pgdir;
-//   pte_t *pte;
-//   uint va;
-
-//   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-//     if (p->pid == pid) {
-//       pgdir = p->pgdir;
-//       for(va = 0; va < p->sz; va += PGSIZE) 
-//         if((pte = walkpgdir(pgdir, (void *) va, 0)) != 0) 
-//           if(*pte & PTE_P) // check if the page is present
-//             cprintf("virtual address: %x, physical address: %x, permissions: %x\n", 
-//                 va, PTE_ADDR(*pte), PTE_FLAGS(*pte));
-//       return;
-//     }
-//   }
-//   cprintf("No such process with PID: %d\n", pid);
-// }

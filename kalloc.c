@@ -98,8 +98,11 @@ kalloc(void)
 
 int isphysicalpagefree(int ppn) {
   struct run *r;
+
+  // Go through and check for free pages
   for(r = kmem.freelist; r; r = r->next)
     if (PPN(V2P((char *)r)) == ppn)
-      return 1;  // page is free
-  return 0;  // page is not free
+      return 1;
+
+  return 0;
 }

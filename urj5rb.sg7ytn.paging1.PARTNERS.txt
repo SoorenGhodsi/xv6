@@ -1,0 +1,14 @@
+Partner File
+
+Mehmet Faruk Yaylagul (urj5rb)
+Sooren Ghodsi (sg7ytn)
+
+Dynamic Page Allocation Part 1 in xv6
+
+Collaboration Statement:
+In this assignment, we (Sooren and Faruk) have worked collaboratively to extend the functionality of the xv6 operating system by implementing new system calls that aid in debugging and understanding the paging mechanism of xv6. 
+
+Contributions:
+Sooren Ghodsi was responsible for the development of the getpagetableentry of the isphysicalpagefree system call.  Mehmet Faruk Yaylagul focused on the implementation the dumppagetable system call. 
+
+Both partners engaged in thorough testing and debugging of the new system calls, ensuring their correct operation within the xv6 environment. We also conducted code reviews for each other to ensure that the implementation was not only functional but also adhered to the coding standards of the xv6 project.

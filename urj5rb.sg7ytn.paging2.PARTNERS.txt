@@ -1,0 +1,11 @@
+Partner File
+
+Mehmet Faruk Yaylagul (urj5rb)
+Sooren Ghodsi (sg7ytn)
+
+Dynamic Page Allocation in xv6 Assignment 2
+
+Collaboration Statement:
+In this assignment, we (Sooren and Faruk) have worked collaboratively to extend the functionality of the xv6 operating system by implementing on-demand heap memory allocation. This feature allows xv6 to allocate heap memory based on page faults, which is a more efficient use of memory compared to the existing immediate allocation strategy.
+
+We equally worked together side by side to modify the page fault handler to support on-demand allocation of heap memory. This involves detecting page faults caused by heap access and allocating memory accordingly. Sooren implemented the logic for dynamically allocating and deallocating heap memory pages, and Faruk helped him for process termination and error handling. After we completed the assignment, we both focused on testing the modified page fault handler and ensuring that it correctly handles various scenarios

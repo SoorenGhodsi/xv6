@@ -32,6 +32,28 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
+static pte_t *
+walkpgdir(pde_t *pgdir, const void *va, int alloc)
+{
+  pde_t *pde;
+  pte_t *pgtab;
+
+  pde = &pgdir[PDX(va)];
+  if(*pde & PTE_P){
+    pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
+  } else {
+    if(!alloc || (pgtab = (pte_t*)kalloc()) == 0)
+      return 0;
+    // Make sure all those PTE_P bits are zero.
+    memset(pgtab, 0, PGSIZE);
+    // The permissions here are overly generous, but they can
+    // be further restricted by the permissions in the page table
+    // entries, if necessary.
+    *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
+  }
+  return &pgtab[PTX(va)];
+}
+
 //PAGEBREAK: 41
 void
 trap(struct trapframe *tf)
@@ -77,6 +99,45 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+
+  case T_PGFLT: {
+    uint fault_addr = rcr2();
+    struct proc *curproc = myproc();
+
+    if(curproc == 0)
+      panic("kernel page fault");
+
+    if ((fault_addr >= curproc->sz) || (fault_addr < PGSIZE) || 
+      (fault_addr >= 0x8000 && fault_addr < 0x9000)) {
+      curproc->killed = 1; 
+      break;
+    }
+
+    pte_t *pte = walkpgdir(curproc->pgdir, (void*)fault_addr, 1);
+    if (!pte) {
+      cprintf("Page fault handler: walkpgdir failed\n");
+      curproc->killed = 1;
+      break;
+    }
+
+    if(*pte & PTE_U) {
+      cprintf("Page fault handler: page already present\n");
+      curproc->killed = 1;
+      break;
+    }
+
+    char *mem = kalloc();
+    if(mem == 0) {
+      cprintf("Page fault handler: out of memory\n");
+      curproc->killed = 1;
+      break;
+    }
+    memset(mem, 0, PGSIZE);
+    
+    *pte = V2P(mem) | PTE_P | PTE_W | PTE_U;
+
+    break;
+  }
 
   //PAGEBREAK: 13
   default:

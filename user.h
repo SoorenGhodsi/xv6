@@ -30,7 +30,7 @@ int shutdown(void);
 int writecount(void);
 int setwritecount(int);
 int settickets(int);
-int getprocessesinfo(struct processes_info *);
+int getprocessesinfo(struct processes_info*);
 int getpagetableentry(int, int);
 int isphysicalpagefree(int);
 int dumppagetable(int);
